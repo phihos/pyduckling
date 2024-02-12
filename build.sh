@@ -26,7 +26,7 @@ function cleanup {
 }
 trap cleanup EXIT
 
-function build_or_pull_pyduckling_build_image {
+function build_pyduckling_build_image {
   python3_version=$1
   BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version")
   if docker manifest inspect "${BUILD_IMAGE}" > /dev/null 2>&1; then
@@ -37,7 +37,7 @@ function build_or_pull_pyduckling_build_image {
     containers/pyduckling/build.sh
   fi
 }
-export -f build_or_pull_pyduckling_build_image
+export -f build_pyduckling_build_image
 
 function build_python_package() {
   python3_version=$1
@@ -71,7 +71,7 @@ else
   containers/duckling-ffi/build.sh
 fi
 
-echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_or_pull_pyduckling_build_image {}'
+echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_pyduckling_build_image {}'
 
 mkdir -p "${USER_HOME_CACHE_PATH}"
 
