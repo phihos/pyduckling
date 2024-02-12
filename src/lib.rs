@@ -10,7 +10,7 @@
 // use pyo3::class::PyMappingProtocol;
 use pyo3::create_exception;
 use pyo3::exceptions;
-use pyo3::gc::{PyGCProtocol, PyVisit};
+use pyo3::gc::PyVisit;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use pyo3::PyTraverseError;
@@ -83,7 +83,7 @@ extern "C" {
     pub fn hs_exit();
 }
 
-create_exception!(pyduckling, RuntimeStoppedError, exceptions::Exception);
+create_exception!(pyduckling, RuntimeStoppedError, exceptions::PyException);
 
 /// Initialize the Haskell runtime. This function is safe to call more than once, and
 /// will do nothing on subsequent calls.
@@ -116,7 +116,7 @@ pub fn stop() -> PyResult<()> {
         let err = "Haskell: The GHC runtime may only be stopped once. See \
       https://downloads.haskell.org/%7Eghc/latest/docs/html/users_guide\
       /ffi-chap.html#id1";
-        let exc = RuntimeStoppedError::py_err(err.to_string());
+        let exc = RuntimeStoppedError::new_err(err.to_string());
         return Err(exc);
     }
     stop_hs();
@@ -136,15 +136,16 @@ extern "C" fn stop_hs() {
 }
 
 /// Handle to the time zone database stored by Duckling
-#[pyclass(name=TimeZoneDatabase)]
+#[pyclass(name="TimeZoneDatabase")]
 #[derive(Debug, Clone)]
 pub struct TimeZoneDatabaseWrapper {
     ptr: *mut HaskellValue,
 }
+unsafe impl Send for TimeZoneDatabaseWrapper {}
 
-#[pyproto]
-impl PyGCProtocol for TimeZoneDatabaseWrapper {
-    fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
+#[pymethods]
+impl TimeZoneDatabaseWrapper {
+    fn __traverse__(&self, _visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         Ok(())
     }
 
@@ -163,11 +164,12 @@ impl PyGCProtocol for TimeZoneDatabaseWrapper {
 // }
 
 /// Handle to the time zone database stored by Duckling
-#[pyclass(name=DucklingTime)]
+#[pyclass(name="DucklingTime")]
 #[derive(Debug, Clone)]
 pub struct DucklingTimeWrapper {
     ptr: *mut HaskellValue,
 }
+unsafe impl Send for DucklingTimeWrapper {}
 
 #[pymethods]
 impl DucklingTimeWrapper {
@@ -182,10 +184,7 @@ impl DucklingTimeWrapper {
         };
         Ok(string_result)
     }
-}
 
-#[pyproto]
-impl PyGCProtocol for DucklingTimeWrapper {
     fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
         Ok(())
     }
@@ -196,11 +195,12 @@ impl PyGCProtocol for DucklingTimeWrapper {
 }
 
 /// Handle to a language code stored by Duckling
-#[pyclass(name=Language)]
+#[pyclass(name="Language")]
 #[derive(Debug, Clone)]
 pub struct LanguageWrapper {
     ptr: *mut HaskellValue,
 }
+unsafe impl Send for LanguageWrapper {}
 
 #[pymethods]
 impl LanguageWrapper {
@@ -215,10 +215,7 @@ impl LanguageWrapper {
         };
         Ok(string_result)
     }
-}
 
-#[pyproto]
-impl PyGCProtocol for LanguageWrapper {
     fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
         Ok(())
     }
@@ -229,11 +226,12 @@ impl PyGCProtocol for LanguageWrapper {
 }
 
 /// Handle to a locale code stored by Duckling
-#[pyclass(name=Locale)]
+#[pyclass(name="Locale")]
 #[derive(Debug, Clone)]
 pub struct LocaleWrapper {
     ptr: *mut HaskellValue,
 }
+unsafe impl Send for LocaleWrapper {}
 
 #[pymethods]
 impl LocaleWrapper {
@@ -248,10 +246,7 @@ impl LocaleWrapper {
         };
         Ok(string_result)
     }
-}
 
-#[pyproto]
-impl PyGCProtocol for LocaleWrapper {
     fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
         Ok(())
     }
@@ -262,14 +257,15 @@ impl PyGCProtocol for LocaleWrapper {
 }
 
 /// Handle to a parsing dimension identifier
-#[pyclass(name=Dimension)]
+#[pyclass(name="Dimension")]
 #[derive(Debug, Clone)]
 pub struct DimensionWrapper {
     ptr: *mut HaskellValue,
 }
+unsafe impl Send for DimensionWrapper {}
 
-#[pyproto]
-impl PyGCProtocol for DimensionWrapper {
+#[pymethods]
+impl DimensionWrapper {
     fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
         Ok(())
     }

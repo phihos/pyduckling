@@ -85,6 +85,8 @@ PyDuckling provides access to the parsing capabilities of Duckling used to extra
 from duckling import (load_time_zones, parse_ref_time,
                       parse_lang, default_locale_lang, parse_locale,
                       parse_dimensions, parse, Context)
+# Install with pip install pendulum
+import pendulum
 
 # Load reference time for time parsing
 time_zones = load_time_zones("/usr/share/zoneinfo")
@@ -110,7 +112,7 @@ valid_dimensions = ["amount-of-money", "credit-card-number", "distance",
 output_dims = parse_dimensions(valid_dimensions)
 
 # Parse a phrase
-result = parse('En dos semanas', context, dims, False)
+result = parse('En dos semanas', context, output_dims, False)
 ```
 
 This wrapper allows access to all the dimensions and languages available on Duckling:
