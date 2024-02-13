@@ -56,9 +56,9 @@ function build_python_package() {
     "${BUILD_IMAGE}" \
     sleep infinity
   docker exec "${CONTAINER_NAME}" bash -c 'if [[ ! -d "$HOME/venv" ]]; then python3 -m venv "$VENV"; fi'
-  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && pip install pytest pendulum'
+  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && pip install pytest pytest-cov coverage pendulum'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin develop'
-  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && pytest -v duckling/tests'
+  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && pytest -x -v --cov=duckling duckling/tests'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin build -r --sdist'
   docker rm -f "${CONTAINER_NAME}" > /dev/null 2>&1 || true
 }

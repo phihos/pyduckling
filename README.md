@@ -20,10 +20,7 @@ To install pyduckling, you can use both conda and pip package managers:
 
 ```bash
 # Using pip
-pip install pyduckling-native
-
-# Using conda
-conda install pyduckling -c treble-ai
+pip install pyduckling-native-phihos
 ```
 
 **Notes:** Right now, we only provide package distributions for Linux (x86_64). We will provide Windows and Mac distributions on the next release
