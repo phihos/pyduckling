@@ -6,7 +6,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Cache Gradle packages
+      - name: Cache build dependencies
         uses: actions/cache@v3
         env:
           cache-name: cache-build-deps
