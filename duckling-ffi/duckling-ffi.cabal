@@ -35,11 +35,11 @@ library
   -- Static linking libraries
   extra-libraries:     HSrts
   -- Static compilation flags
-  ghc-options: -static -no-hs-main -staticlib -optl-static -fPIC
+  ghc-options: -static -no-hs-main -staticlib -optl-static -fPIC -o libducklingffi.a
   cc-options: -static
   ld-options: -static
   -- Dynamic compilation library
-  -- ghc-options: -dynamic -fPIC -no-hs-main -shared
+  -- ghc-options: -dynamic -fPIC -no-hs-main -shared -o libducklingffi.so
   other-extensions: ForeignFunctionInterface
 
 source-repository head
