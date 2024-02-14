@@ -58,7 +58,6 @@ function build_python_package() {
     --mount type=bind,source="${USER_HOME_CACHE_PATH}",target=/userhome \
     --user "$(id -u):$(id -g)" \
     --name "${CONTAINER_NAME}" \
-    -e GHC_VERSION \
     -e HOME=/userhome \
     -e VENV="/userhome/${VENV_NAME}" \
     --detach \
