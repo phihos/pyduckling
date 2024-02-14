@@ -9,6 +9,7 @@
 
 > ℹ️ This is a fork of the original pyduckling-native library. There are differences to the original:
 > * Build against the latest version of [Duckling](https://github.com/facebook/duckling)
+> * Supported Python versions range from 3.8 to 3.12
 > * x86_64 Linux only, but contributions welcome if you dare to take on the challenge
 
 ## Overview
