@@ -89,6 +89,7 @@ echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_p
 mkdir -p "${USER_HOME_CACHE_PATH}"
 
 # --- build the statically linked library file
+echo "---"
 echo "Building statically linked \"libducklingffi.a\"..."
 docker run \
   --mount type=bind,source="$(pwd)"/duckling-ffi,target=/duckling-ffi \
@@ -100,12 +101,12 @@ docker run \
   "${BUILD_IMAGE_DUCKLING_FFI}" \
   sleep infinity
 docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && stack build --no-install-ghc --system-ghc --allow-different-user'
-docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && ghc --numeric-version > ghc-version'
 docker cp "${STATIC_LIB_CONTAINER_NAME}:/duckling-ffi/libducklingffi.a" ext_lib/libducklingffi.a
 
 # --- build binary distributions
+echo "---"
 echo "Building GLIBC wheels for all python versions..."
 echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {} glibc'
-
+echo "---"
 echo "Building MUSL wheels for all python versions..."
 echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {} musl'
