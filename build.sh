@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eo pipefail
 
 cd "${0%/*}" || exit # go to script dir
 
@@ -18,9 +18,14 @@ then
 fi
 
 function cleanup {
+  echo "Cleaning up..."
   docker rm -f "${STATIC_LIB_CONTAINER_NAME}" > /dev/null 2>&1 || true
-  for python3_version in $$PYTHON3_VERSION_RANGE; do
-    CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}"
+  for python3_version in $PYTHON3_VERSION_RANGE; do
+    CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}-glibc"
+    docker rm -f "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+  done
+  for python3_version in $PYTHON3_VERSION_RANGE; do
+    CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}-musl"
     docker rm -f "${CONTAINER_NAME}" > /dev/null 2>&1 || true
   done
 }
@@ -28,12 +33,14 @@ trap cleanup EXIT
 
 function build_pyduckling_build_image {
   python3_version=$1
-  BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version")
+  libc_version=$2
+  BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version" "$libc_version")
   if docker manifest inspect "${BUILD_IMAGE}" > /dev/null 2>&1; then
     echo "Image \"${BUILD_IMAGE}\" already available. Skipping build..."
   else
     echo "Building \"${BUILD_IMAGE}\"..."
     export PYTHON3_VERSION=$python3_version
+    export LIBC_VERSION=$libc_version
     containers/pyduckling/build.sh
   fi
 }
@@ -41,9 +48,11 @@ export -f build_pyduckling_build_image
 
 function build_python_package() {
   python3_version=$1
-  BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version")
-  CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}"
-  VENV_NAME="venv-3.${python3_version}"
+  libc_version=$2
+  BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version" "$libc_version")
+  CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}-${libc_version}"
+  VENV_NAME="venv-3.${python3_version}-${libc_version}"
+  echo "Building wheel for Python 3.${python3_version} in ${BUILD_IMAGE}..."
   docker run \
     --mount type=bind,source="$(pwd)",target=/repo \
     --mount type=bind,source="${USER_HOME_CACHE_PATH}",target=/userhome \
@@ -55,26 +64,31 @@ function build_python_package() {
     --detach \
     "${BUILD_IMAGE}" \
     sleep infinity
-  docker exec "${CONTAINER_NAME}" bash -c 'if [[ ! -d "$HOME/venv" ]]; then python3 -m venv "$VENV"; fi'
+  docker exec "${CONTAINER_NAME}" bash -c 'if [[ ! -d "$VENV" ]]; then python -m venv "$VENV"; fi'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && pip install pytest pytest-cov coverage pendulum'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin develop'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && pytest -x -v --cov=duckling duckling/tests'
-  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin build -r --sdist'
-  docker rm -f "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin build -r'
+  if [[ "$PUBLISH" == "1" ]]; then
+    docker exec -e MATURIN_USERNAME -e MATURIN_PASSWORD "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin publish --skip-existing --no-sdist'
+  fi
 }
 export -f build_python_package
 
+# --- build necessary container images
 if docker manifest inspect "${BUILD_IMAGE_DUCKLING_FFI}" > /dev/null 2>&1; then
   echo "Image \"${BUILD_IMAGE_DUCKLING_FFI}\" already available. Skipping build..."
 else
   echo "Building \"${BUILD_IMAGE_DUCKLING_FFI}\"..."
   containers/duckling-ffi/build.sh
 fi
+echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_pyduckling_build_image {} glibc'
+echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_pyduckling_build_image {} musl'
 
-echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_pyduckling_build_image {}'
-
+# --- create cache directory for faster repeated execution
 mkdir -p "${USER_HOME_CACHE_PATH}"
 
+# --- build the statically linked library file
 echo "Building statically linked \"libducklingffi.a\"..."
 docker run \
   --mount type=bind,source="$(pwd)"/duckling-ffi,target=/duckling-ffi \
@@ -86,8 +100,12 @@ docker run \
   "${BUILD_IMAGE_DUCKLING_FFI}" \
   sleep infinity
 docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && stack build --no-install-ghc --system-ghc --allow-different-user'
+docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && ghc --numeric-version > ghc-version'
 docker cp "${STATIC_LIB_CONTAINER_NAME}:/duckling-ffi/libducklingffi.a" ext_lib/libducklingffi.a
-docker rm -f "${STATIC_LIB_CONTAINER_NAME}" > /dev/null 2>&1 || true
 
-echo "Building wheel for all python versions..."
-echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {}'
+# --- build binary distributions
+echo "Building GLIBC wheels for all python versions..."
+echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {} glibc'
+
+echo "Building MUSL wheels for all python versions..."
+echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {} musl'

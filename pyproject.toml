@@ -3,8 +3,6 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
-manylinux = "off"
-sdist-include = ["duckling-ffi/*"]
 requires-dist = ["pendulum"]
 classifier = [
     "Development Status :: 4 - Beta",

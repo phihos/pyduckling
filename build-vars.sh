@@ -1,3 +1,4 @@
+# common source for all build variables
 export PYTHON3_VERSION_MIN=8
 export PYTHON3_VERSION_MAX=12
 export PYTHON3_VERSION_RANGE=$(seq "${PYTHON3_VERSION_MIN}" 1 "${PYTHON3_VERSION_MAX}")
@@ -11,6 +12,8 @@ export BUILD_IMAGE_DUCKLING_FFI=$IMAGE_PREFIX/duckling-ffi-build:alpine-${ALPINE
 export BUILD_IMAGE_PYDUCKLING=$IMAGE_PREFIX/pyduckling-build:alpine-${ALPINE_VERSION_PYDUCKLING}-maturin-${MATURIN_VERSION}
 
 function build_image_pyduckling_for_python3_version() {
-    echo "$IMAGE_PREFIX/pyduckling-build:python-3.${1}-maturin-${MATURIN_VERSION}"
+  python3_version=$1
+  libc_version=$2
+  echo "$IMAGE_PREFIX/pyduckling-build:${libc_version}-python-3.${python3_version}-maturin-${MATURIN_VERSION}"
 }
 export -f build_image_pyduckling_for_python3_version
