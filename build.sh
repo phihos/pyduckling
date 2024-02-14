@@ -100,7 +100,7 @@ docker run \
   --detach \
   "${BUILD_IMAGE_DUCKLING_FFI}" \
   sleep infinity
-docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && stack build --no-install-ghc --system-ghc --allow-different-user'
+docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && stack build --no-install-ghc --system-ghc --allow-different-user --force-dirty'
 docker cp "${STATIC_LIB_CONTAINER_NAME}:/duckling-ffi/libducklingffi.a" ext_lib/libducklingffi.a
 
 # --- build binary distributions
