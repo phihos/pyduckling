@@ -143,6 +143,7 @@ pub struct TimeZoneDatabaseWrapper {
     ptr: *mut HaskellValue,
 }
 unsafe impl Send for TimeZoneDatabaseWrapper {}
+unsafe impl Sync for TimeZoneDatabaseWrapper {}
 
 #[pymethods]
 impl TimeZoneDatabaseWrapper {
@@ -171,6 +172,7 @@ pub struct DucklingTimeWrapper {
     ptr: *mut HaskellValue,
 }
 unsafe impl Send for DucklingTimeWrapper {}
+unsafe impl Sync for DucklingTimeWrapper {}
 
 #[pymethods]
 impl DucklingTimeWrapper {
@@ -202,6 +204,7 @@ pub struct LanguageWrapper {
     ptr: *mut HaskellValue,
 }
 unsafe impl Send for LanguageWrapper {}
+unsafe impl Sync for LanguageWrapper {}
 
 #[pymethods]
 impl LanguageWrapper {
@@ -233,6 +236,7 @@ pub struct LocaleWrapper {
     ptr: *mut HaskellValue,
 }
 unsafe impl Send for LocaleWrapper {}
+unsafe impl Sync for LocaleWrapper {}
 
 #[pymethods]
 impl LocaleWrapper {
@@ -264,6 +268,7 @@ pub struct DimensionWrapper {
     ptr: *mut HaskellValue,
 }
 unsafe impl Send for DimensionWrapper {}
+unsafe impl Sync for DimensionWrapper {}
 
 #[pymethods]
 impl DimensionWrapper {
