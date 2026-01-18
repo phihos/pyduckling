@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.3.0](https://github.com/phihos/pyduckling/tree/v0.3.0) (2026-01-18)
+
+[Full Changelog](https://github.com/phihos/pyduckling/compare/v0.2.0...v0.3.0)
+
+**Merged pull requests:**
+
+- Add Python 3.13 and 3.14 support [\#4](https://github.com/phihos/pyduckling/pull/4) ([phihos](https://github.com/phihos))
+
 ## [v0.2.0](https://github.com/phihos/pyduckling/tree/v0.2.0) (2024-02-14)
 
 [Full Changelog](https://github.com/phihos/pyduckling/compare/v0.1.0...v0.2.0)

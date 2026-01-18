@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(git config:*)",
+      "Bash(tree:*)",
+      "WebSearch",
+      "WebFetch(domain:pyo3.rs)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:quay.io)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
