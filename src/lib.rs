@@ -12,7 +12,9 @@ use pyo3::create_exception;
 use pyo3::exceptions;
 use pyo3::gc::PyVisit;
 use pyo3::prelude::*;
+use pyo3::types::PyModule;
 use pyo3::wrap_pyfunction;
+use pyo3::Bound;
 use pyo3::PyTraverseError;
 
 use std::ffi::{CStr, CString};
@@ -184,7 +186,7 @@ impl DucklingTimeWrapper {
         Ok(string_result)
     }
 
-    fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
+    fn __traverse__(&self, _visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         Ok(())
     }
 
@@ -215,7 +217,7 @@ impl LanguageWrapper {
         Ok(string_result)
     }
 
-    fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
+    fn __traverse__(&self, _visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         Ok(())
     }
 
@@ -246,7 +248,7 @@ impl LocaleWrapper {
         Ok(string_result)
     }
 
-    fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
+    fn __traverse__(&self, _visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         Ok(())
     }
 
@@ -265,7 +267,7 @@ unsafe impl Send for DimensionWrapper {}
 
 #[pymethods]
 impl DimensionWrapper {
-    fn __traverse__(&self, _visit: PyVisit) -> Result<(), PyTraverseError> {
+    fn __traverse__(&self, _visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         Ok(())
     }
 
@@ -513,18 +515,18 @@ fn parse_text(
 
 /// This module is a python module implemented in Rust.
 #[pymodule]
-fn duckling(_py: Python, m: &PyModule) -> PyResult<()> {
+fn duckling(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", VERSION)?;
-    m.add_wrapped(wrap_pyfunction!(load_time_zones))?;
-    m.add_wrapped(wrap_pyfunction!(get_current_ref_time))?;
-    m.add_wrapped(wrap_pyfunction!(parse_ref_time))?;
-    m.add_wrapped(wrap_pyfunction!(parse_lang))?;
-    m.add_wrapped(wrap_pyfunction!(default_locale_lang))?;
-    m.add_wrapped(wrap_pyfunction!(parse_locale))?;
-    m.add_wrapped(wrap_pyfunction!(parse_dimensions))?;
-    m.add_wrapped(wrap_pyfunction!(parse_text))?;
-    m.add_wrapped(wrap_pyfunction!(init))?;
-    m.add_wrapped(wrap_pyfunction!(stop))?;
+    m.add_function(wrap_pyfunction!(load_time_zones, m)?)?;
+    m.add_function(wrap_pyfunction!(get_current_ref_time, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_ref_time, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_lang, m)?)?;
+    m.add_function(wrap_pyfunction!(default_locale_lang, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_locale, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_dimensions, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_text, m)?)?;
+    m.add_function(wrap_pyfunction!(init, m)?)?;
+    m.add_function(wrap_pyfunction!(stop, m)?)?;
     m.add_class::<TimeZoneDatabaseWrapper>()?;
     m.add_class::<Context>()?;
     m.add_class::<DucklingTimeWrapper>()?;
