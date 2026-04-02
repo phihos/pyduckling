@@ -14,8 +14,8 @@ extra-source-files:  README.md
 cabal-version:       >=1.10
 
 flag versioned-rts
-  description: Use versioned RTS library name (HSrts-1.0.2). Required for GHC installations using the Hadrian build system (e.g. Alpine native bindist).
-  default: False
+  description: Use versioned RTS library name (HSrts-1.0.2). Required for GHC 9.2+ installations using the Hadrian build system.
+  default: True
 
 library
   hs-source-dirs:      DucklingFFI
