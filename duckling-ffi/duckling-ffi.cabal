@@ -13,6 +13,9 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+flag versioned-rts
+  description: Use versioned RTS library name (HSrts-1.0.2). Required for GHC installations using the Hadrian build system (e.g. Alpine native bindist).
+  default: False
 
 library
   hs-source-dirs:      DucklingFFI
@@ -31,12 +34,11 @@ library
                      , timezone-series
                      , filepath
   default-language:    Haskell2010
-  -- Static linking libraries
-  extra-libraries:     HSrts-1.0.2
-  -- Static compilation flags
+  if flag(versioned-rts)
+    extra-libraries:   HSrts-1.0.2
+  else
+    extra-libraries:   HSrts
   ghc-options: -no-hs-main -staticlib -fPIC -o libducklingffi.a
-  -- Dynamic compilation library
-  -- ghc-options: -dynamic -fPIC -no-hs-main -shared -o libducklingffi.so
   other-extensions: ForeignFunctionInterface
 
 source-repository head
