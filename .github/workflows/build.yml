@@ -91,10 +91,11 @@ jobs:
         run: |
           pip install pytest pendulum
           pip install target/wheels/*.whl
+          # Run tests from /tmp to avoid local duckling/ shadowing the installed package
+          cp -r duckling/tests /tmp/duckling_tests
           cd /tmp
           python -c "from duckling import parse_lang; print(parse_lang('EN').name)"
-          cd $GITHUB_WORKSPACE
-          pytest -x -v duckling/tests
+          pytest -x -v duckling_tests
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
