@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.4.0](https://github.com/phihos/pyduckling/tree/v0.4.0) (2026-04-02)
+
+[Full Changelog](https://github.com/phihos/pyduckling/compare/v0.3.0...v0.4.0)
+
+**Merged pull requests:**
+
+- Update dependencies [\#6](https://github.com/phihos/pyduckling/pull/6) ([phihos](https://github.com/phihos))
+
+**Closed issues:**
+
+- macOS ARM64 (Apple Silicon) support [\#5](https://github.com/phihos/pyduckling/issues/5)
+
 ## [v0.3.0](https://github.com/phihos/pyduckling/tree/v0.3.0) (2026-01-18)
 
 [Full Changelog](https://github.com/phihos/pyduckling/compare/v0.2.0...v0.3.0)

@@ -10,7 +10,7 @@
 > ℹ️ This is a fork of the original pyduckling-native library. There are differences to the original:
 > * Build against the latest version of [Duckling](https://github.com/facebook/duckling)
 > * Supported Python versions range from 3.8 to 3.14
-> * x86_64 Linux only, but contributions welcome if you dare to take on the challenge
+> * Supported platforms: x86_64 Linux and macOS ARM64 (Apple Silicon)
 
 ## Overview
 This package provides native bindings for Facebook's [Duckling](https://github.com/facebook/duckling) in Python. This package supports all dimensions and languages available on the original library, and it does not require to spawn a Haskell server and does not use HTTP to call the Duckling API.
@@ -25,7 +25,7 @@ To install pyduckling, you can use both conda and pip package managers:
 pip install pyduckling-native-phihos
 ```
 
-> ℹ️ Right now, we only provide package distributions for Linux (x86_64).
+> ℹ️ We provide package distributions for Linux (x86_64) and macOS (ARM64/Apple Silicon).
 
 
 ## Version Matrix
@@ -36,6 +36,7 @@ The following table shows which PyDuckling version corresponds to which Duckling
 |--------------------|-------------------------------------------------------------------|
 | 0.2.0              | v0.2.0.0 (commit [7520daa](https://github.com/facebook/duckling)) |
 | 0.3.0              | v0.2.0.0 (commit [7520daa](https://github.com/facebook/duckling)) |
+| 0.4.0              | v0.2.0.1 (commit [59a13ff](https://github.com/facebook/duckling)) |
 
 ## Package usage
 PyDuckling provides access to the parsing capabilities of Duckling used to extract structured data from text.
@@ -173,3 +174,6 @@ Please see our [CHANGELOG](https://github.com/phihos/pyduckling/blob/master/CHAN
 
 ## Contribution guidelines
 We follow PEP8 and PEP257 for pure python packages and Rust to compile extensions. We use MyPy type annotations for all functions and classes declared on this package. Feel free to send a PR or create an issue if you have any problem/question.
+
+## Special Thanks
+* [@evanscastonguay](https://github.com/evanscastonguay) for building the first working macOS ARM64 proof-of-concept and providing the research that made Apple Silicon support possible.
