@@ -5,7 +5,7 @@ on:
   release:
     types: [ published ]
 jobs:
-  build-and-test:
+  build-and-test-linux:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     steps:
@@ -26,17 +26,94 @@ jobs:
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-linux
           path: |
             target/wheels/*.tar.gz
             target/wheels/*.whl
+
+  build-and-test-macos-arm64:
+    runs-on: macos-14
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          brew install pcre gmp
+
+      - name: Install GHC and Stack
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | \
+            BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
+            BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 \
+            BOOTSTRAP_HASKELL_GHC_VERSION=9.2.8 \
+            sh
+          echo "$HOME/.ghcup/bin" >> $GITHUB_PATH
+          curl -sSL https://get.haskellstack.org/ | sh
+
+      - name: Cache Stack dependencies
+        uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-stack-${{ hashFiles('duckling-ffi/stack.yaml') }}
+          restore-keys: ${{ runner.os }}-stack-
+          path: |
+            ~/.stack
+
+      - name: Build libducklingffi.a
+        run: |
+          cd duckling-ffi
+          stack build --allow-different-user --system-ghc
+          cp libducklingffi.a ../ext_lib/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install maturin
+        run: pip install maturin
+
+      - name: Build wheel
+        run: maturin build --release
+
+      - name: Test wheel
+        run: |
+          pip install pytest pendulum
+          pip install target/wheels/*.whl
+          cd /tmp
+          python -c "from duckling import parse_lang; print(parse_lang('EN').name)"
+          cd $GITHUB_WORKSPACE
+          pytest -x -v duckling/tests
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-arm64-py${{ matrix.python-version }}
+          path: target/wheels/*.whl
+
   publish:
-    needs: build-and-test
+    needs: [build-and-test-linux, build-and-test-macos-arm64]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
-      - name: Download wheels
+      - name: Download Linux wheels
         uses: actions/download-artifact@v4
+        with:
+          name: wheels-linux
+          path: wheels/
+      - name: Download macOS ARM64 wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-macos-arm64-*
+          path: wheels/
+          merge-multiple: true
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

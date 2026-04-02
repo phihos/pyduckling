@@ -19,8 +19,7 @@ library
   exposed-modules:     FFI
   build-depends:       base
                      , duckling
-                     , aeson < 2
-                    --  , curryrs >= 0.2.0 && < 0.3.0
+                     , aeson
                      , text
                      , bytestring
                      , string-conversions
@@ -33,11 +32,9 @@ library
                      , filepath
   default-language:    Haskell2010
   -- Static linking libraries
-  extra-libraries:     HSrts
+  extra-libraries:     HSrts-1.0.2
   -- Static compilation flags
-  ghc-options: -static -no-hs-main -staticlib -optl-static -fPIC -o libducklingffi.a
-  cc-options: -static
-  ld-options: -static
+  ghc-options: -no-hs-main -staticlib -fPIC -o libducklingffi.a
   -- Dynamic compilation library
   -- ghc-options: -dynamic -fPIC -no-hs-main -shared -o libducklingffi.so
   other-extensions: ForeignFunctionInterface

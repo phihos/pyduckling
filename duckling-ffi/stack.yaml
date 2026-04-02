@@ -2,14 +2,15 @@ packages:
   - .
 extra-deps:
   - git: https://github.com/facebook/duckling.git
-    commit: 7520daaeba28691cda8e1b5c3d946028a28fb64b
-  - regex-posix-clib-2.7
-  - dependent-sum-0.7.1.0@sha256:0e419237f5b86da3659772afff9cab355c0f8d5b3fdb15a5b30e673d8dc83941,2147
-  - constraints-extras-0.3.1.0@sha256:c70fcf437e1d640cfd50a8eda1db47a64e49c96857e08fd0d8c438327d908ac1,1846
-resolver: lts-16.31
-allow-newer: false
-install-ghc: false
+    commit: 59a13ff87b1aa8be6b93d387244f8636b26185c5
+  - snap-core-1.0.5.1
+  - snap-server-1.1.2.1
+  - readable-0.3.1
+  - io-streams-1.5.2.2
+  - io-streams-haproxy-1.0.1.0
+  - network-3.1.4.0
+resolver: lts-20.26
+allow-newer: true
 system-ghc: true
-skip-ghc-check: false
 ghc-options:
   "$everything": -fPIC
