@@ -66,7 +66,10 @@ jobs:
       - name: Build libducklingffi.a
         run: |
           cd duckling-ffi
-          GHC_RTS_DIR=$(stack exec -- ghc --print-libdir)/rts
+          GHC_LIBDIR=$(stack exec -- ghc --print-libdir)
+          # Find the actual RTS directory (layout differs between GHC builds)
+          GHC_RTS_DIR=$(find "$GHC_LIBDIR" -name "libHSrts*.a" -print -quit | xargs dirname)
+          echo "GHC RTS dir: $GHC_RTS_DIR"
           stack build --allow-different-user --system-ghc --extra-lib-dirs="$GHC_RTS_DIR"
           cp libducklingffi.a ../ext_lib/
 
