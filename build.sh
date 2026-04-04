@@ -52,6 +52,9 @@ function build_python_package() {
   BUILD_IMAGE=$(build_image_pyduckling_for_python3_version "$python3_version" "$libc_version")
   CONTAINER_NAME="${PYDUCKLING_CONTAINER_NAME}-${python3_version}-${libc_version}"
   VENV_NAME="venv-3.${python3_version}-${libc_version}"
+  # Use a per-version target directory to avoid Cargo/maturin race conditions
+  # when building multiple Python versions in parallel on a shared bind mount.
+  TARGET_DIR="/repo/target-3.${python3_version}-${libc_version}"
   echo "Building wheel for Python 3.${python3_version} in ${BUILD_IMAGE}..."
   docker run \
     --mount type=bind,source="$(pwd)",target=/repo \
@@ -60,6 +63,7 @@ function build_python_package() {
     --name "${CONTAINER_NAME}" \
     -e HOME=/userhome \
     -e VENV="/userhome/${VENV_NAME}" \
+    -e CARGO_TARGET_DIR="${TARGET_DIR}" \
     --detach \
     "${BUILD_IMAGE}" \
     sleep infinity
@@ -67,7 +71,7 @@ function build_python_package() {
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && pip install pytest pytest-cov coverage pendulum'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin develop'
   docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && pytest -x -v --cov=duckling duckling/tests'
-  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin build -r'
+  docker exec "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin build -r -o /repo/target/wheels'
   if [[ "$PUBLISH" == "1" ]]; then
     docker exec -e MATURIN_USERNAME -e MATURIN_PASSWORD "${CONTAINER_NAME}" bash -c 'source "$VENV/bin/activate" && cd /repo && maturin publish --skip-existing --no-sdist'
   fi
@@ -103,6 +107,7 @@ docker exec "${STATIC_LIB_CONTAINER_NAME}" bash -c 'cd /duckling-ffi && stack bu
 docker cp "${STATIC_LIB_CONTAINER_NAME}:/duckling-ffi/libducklingffi.a" ext_lib/libducklingffi.a
 
 # --- build binary distributions
+mkdir -p target/wheels
 echo "---"
 echo "Building GLIBC wheels for all python versions..."
 echo -n $PYTHON3_VERSION_RANGE | parallel -j0 --halt now,fail=1  -d ' ' 'build_python_package {} glibc'
